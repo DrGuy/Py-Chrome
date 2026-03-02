@@ -13,6 +13,19 @@ try:
 except Exception:
     TIFFFILE_AVAILABLE = False
 
+# rawpy provides support for many camera raw formats (NEF, CR2, ARW, etc.).
+# It's optional so we gracefully degrade if it's not installed.
+try:
+    import rawpy
+
+    RAWPY_AVAILABLE = True
+    # A small set of common raw extensions. rawpy supports many more, but this
+    # covers Nikon and other popular cameras; additional ones can be added later.
+    RAW_EXTENSIONS = {".NEF", ".cr2", ".arw", ".dng", ".rw2", ".orf", ".pef", ".raf"}
+except Exception:
+    RAWPY_AVAILABLE = False
+    RAW_EXTENSIONS = set()
+
 
 def is_tiff_path(path):
     ext = os.path.splitext(path or "")[1].lower()
@@ -86,8 +99,29 @@ def _normalize_image_array_to_rgb_float(image_array):
 def _load_raw_image_array(path):
     """
     Load image data from disk with TIFF precision preserved when available.
+
+    This function now supports camera raw formats via rawpy if the library is
+    installed. The raw image is demosaiced to a 16‑bit RGB array using the
+    camera's white balance and a high-quality demosaic algorithm. If rawpy is
+    unavailable or fails, the loader falls back to the previous TIFF/PIL logic.
     """
     ext = os.path.splitext(path)[1].lower()
+
+    # Prefer rawpy for known raw extensions.
+    if RAWPY_AVAILABLE and ext in RAW_EXTENSIONS:
+        try:
+            with rawpy.imread(path) as raw:
+                arr = raw.postprocess(
+                    use_camera_wb=True,
+                    output_bps=16,
+                    demosaic_algorithm=rawpy.DemosaicAlgorithm.AHD,
+                    no_auto_bright=True,
+                )
+                print(f"Loaded raw image with rawpy: dtype={arr.dtype}, shape={arr.shape}")
+                return arr
+        except Exception as e:
+            print("rawpy load failed, falling back to TIFF/PIL:", e)
+
     if ext in (".tif", ".tiff") and TIFFFILE_AVAILABLE:
         try:
             arr = tifffile.imread(path)

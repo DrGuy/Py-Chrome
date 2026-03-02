@@ -12,6 +12,9 @@ from io_ops import (
     save_format_items_for_input,
     save_output_array,
 )
+from io_ops import (
+    RAWPY_AVAILABLE, RAW_EXTENSIONS,
+)
 from presets import (
     delete_preset_file,
     list_presets_on_disk,

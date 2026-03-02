@@ -57,6 +57,11 @@ Strongly recommended:
 - tifffile
   Why: enables high-precision TIFF load/save and 16-bit TIFF export path.
 
+Optional but useful:
+- rawpy
+  Why: allows the app to open camera raw files (NEF, CR2, ARW, etc.) which is
+    especially handy for users working with Nikon or other DSLR raw formats.
+
 Optional (build only):
 - pyinstaller
   Why: creates standalone executable distributions.

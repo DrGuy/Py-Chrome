@@ -15,6 +15,9 @@ from state import (
     SAVE_FORMAT_PNG,
 )
 
+from io_ops import (
+    RAW_EXTENSIONS,
+)
 
 def build_ui(callbacks):
     with dpg.texture_registry():
@@ -237,6 +240,8 @@ def build_ui(callbacks):
                 dpg.add_file_extension(".JPG")
                 dpg.add_file_extension(".png")
                 dpg.add_file_extension(".jpg")
+                for item in RAW_EXTENSIONS:
+                    dpg.add_file_extension(item)
 
             # Right panel (previews)
             with dpg.child_window(tag="right_panel", autosize_x=True, autosize_y=True):
